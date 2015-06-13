@@ -3,6 +3,11 @@ require 'rails_helper'
 describe 'Bites' do
   describe 'GET /bites' do
     context 'on success' do
+      before do
+        vid = Video.create! title: "Bobloblaw's Talk", url: 'http://youtube.com/her?'
+        Bite.create! content: vid
+      end
+
       it 'returns response code of 200' do
         get '/v1/bites'
 
@@ -17,7 +22,8 @@ describe 'Bites' do
       end
 
       it 'returns at most 4 bites of content' do
-        vid = Video.create! title: "Bobloblaw's Talk", url: 'http://youtube.com/her?'
+        vid = Video.create! title: "Another Bobloblaw Talk",
+                            url: 'http://youtube.com/her2?'
         5.times { Bite.create! content: vid }
 
         get '/v1/bites'
@@ -38,6 +44,14 @@ describe 'Bites' do
         expect(bite.keys).to eq(['title', 'url'])
         expect(bite['title']).to eq(title)
         expect(bite['url']).to eq(url)
+      end
+    end
+
+    context 'on failure' do
+      it 'returns a response code of 404 when no bites are found' do
+        get '/v1/bites'
+
+        expect(response.response_code).to eq(404)
       end
     end
   end

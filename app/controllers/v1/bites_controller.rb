@@ -2,6 +2,7 @@ module V1
   class BitesController < ApplicationController
     def index
       bites = Bite.first(4)
+      return head 404 if bites.empty?
       presented_bites = bites.map do |bite|
         content = bite.content
         {
