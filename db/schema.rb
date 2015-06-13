@@ -11,9 +11,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 20150613214337) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "bites", force: :cascade do |t|
+    t.integer "content_id"
+    t.string  "content_type"
+  end
+
+  add_index "bites", ["content_type", "content_id"], name: "index_bites_on_content_type_and_content_id", using: :btree
 
 end

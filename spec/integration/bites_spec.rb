@@ -12,5 +12,12 @@ describe 'Bites' do
       body = JSON.parse(response.body)
       expect(body).to have_key('bites')
     end
+
+    it 'returns at most 4 bites of content on successful response' do
+      5.times { Bite.create! }
+      get '/v1/bites'
+      bites = JSON.parse(response.body)['bites']
+      expect(bites.count).to eq(4)
+    end
   end
 end
