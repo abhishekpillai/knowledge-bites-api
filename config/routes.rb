@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get '/', controller: 'v1/bites', action: 'main'
   namespace :v1 do
     get 'bites' => 'bites#index', as: :bites
   end

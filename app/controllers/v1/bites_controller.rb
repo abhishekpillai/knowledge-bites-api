@@ -12,5 +12,9 @@ module V1
       end
       render json: { bites: presented_bites }
     end
+
+    def main
+      @bites = Bite.first(4)
+    end
   end
 end
