@@ -11,6 +11,6 @@ feature 'A knowledge bites session', :type => :feature do
 
     visit '/'
 
-    expect(page).to have_selector('ul li.bite', count: expected_count_of_bites)
+    expect(page).to have_selector('ul section.bite', count: expected_count_of_bites)
   end
 end
