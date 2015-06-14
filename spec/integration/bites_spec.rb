@@ -4,8 +4,8 @@ describe 'Bites' do
   describe 'GET /bites' do
     context 'on success' do
       before do
-        vid = Video.create! title: "Bobloblaw's Talk", url: 'http://youtube.com/her?'
-        Bite.create! content: vid
+        @vid = Video.create! title: "Bobloblaw's Talk", video_id: 'video1'
+        Bite.create! content: @vid
       end
 
       it 'returns response code of 200' do
@@ -22,9 +22,7 @@ describe 'Bites' do
       end
 
       it 'returns at most 4 bites of content' do
-        vid = Video.create! title: "Another Bobloblaw Talk",
-                            url: 'http://youtube.com/her2?'
-        5.times { Bite.create! content: vid }
+        5.times { Bite.create! content: @vid }
 
         get '/v1/bites'
 
@@ -33,17 +31,15 @@ describe 'Bites' do
       end
 
       it 'returns the expected info for each bite of content' do
-        title = "Bobloblaw's Talk"
-        url = 'http://youtube.com/her?'
-        vid = Video.create! title: title, url: url
-        Bite.create! content: vid
+        title = @vid.title
+        video_id = @vid.video_id
 
         get '/v1/bites'
 
         bite = JSON.parse(response.body)['bites'].first
-        expect(bite.keys).to eq(['title', 'url'])
+        expect(bite.keys).to eq(['title', 'videoId'])
         expect(bite['title']).to eq(title)
-        expect(bite['url']).to eq(url)
+        expect(bite['videoId']).to eq(video_id)
       end
     end
 

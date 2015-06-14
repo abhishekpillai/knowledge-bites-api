@@ -9,7 +9,7 @@ describe VideoFetcher do
     videos
   end
 
-  it 'populates the videos table with records' do
+  xit 'populates the videos table with records' do
     expected_video_count = 1000
     videos = generate_videos(expected_video_count)
     Youtube::APIClient.stub(:search).with("ruby lightning talks").and_return([videos])

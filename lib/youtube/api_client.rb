@@ -18,8 +18,9 @@ module Youtube
       uri.query = URI.encode_www_form(params)
       response = Net::HTTP.get_response(uri)
       JSON.parse(response.body)['items'].map do |item|
+        video_id = item['id']['videoId']
         title = item['snippet']['title']
-        Video.new(title: title)
+        Video.new(title: title, video_id: video_id)
       end
     end
   end

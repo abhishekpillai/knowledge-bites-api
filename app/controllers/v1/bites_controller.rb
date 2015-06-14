@@ -7,7 +7,7 @@ module V1
         content = bite.content
         {
           title: content.title,
-          url: content.url
+          videoId: content.video_id
         }
       end
       render json: { bites: presented_bites }
