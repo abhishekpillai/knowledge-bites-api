@@ -5,7 +5,7 @@ module Youtube
     SEARCH_URL = "#{BASE_URL}/search"
 
     def self.search(query, num_results=4)
-      return unless query.is_a?(String)
+      raise ArgumentError.new('query must be a String') unless query.is_a?(String)
       uri = URI(SEARCH_URL)
       params = {
         part: 'snippet',

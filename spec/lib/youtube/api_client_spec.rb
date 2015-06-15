@@ -4,9 +4,10 @@ require 'youtube/api_client'
 module Youtube
   describe APIClient do
     describe '#search' do
-      it 'returns nil if query is not String' do
+      it 'raises error if query is not String' do
         non_string_value = 1
-        expect(APIClient.search(non_string_value)).to be_nil
+        expect{ APIClient.search(non_string_value) }.
+          to raise_error(ArgumentError, 'query must be a String')
       end
 
       context 'service call is successful' do
