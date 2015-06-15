@@ -3,6 +3,9 @@
   <% @bites.each do |bite| %>
     <section class='bite'>
       <li><%=bite.content.title%></li>
+      <iframe
+        src="http://www.youtube.com/embed/<%= bite.content.video_id %>">
+      </iframe>
     </section>
   <% end %>
 </ul>
