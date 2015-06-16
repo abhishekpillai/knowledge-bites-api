@@ -49,6 +49,15 @@ module Youtube
 
           expect(results.count).to eq(default_max_results)
         end
+
+        it 'makes multiple requests when more than 50 results are requested' do
+          max_results_per_request = 50
+
+          expect(Net::HTTP).to receive(:get_response).twice.
+            and_return(double(Net::HTTPOK, body: { 'items' => anything }.to_json))
+
+          results = APIClient.search('anything', max_results_per_request+1)
+        end
       end
     end
   end
