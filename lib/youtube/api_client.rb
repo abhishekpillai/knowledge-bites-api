@@ -32,6 +32,7 @@ module Youtube
         uri = URI(SEARCH_URL)
         uri.query = URI.encode_www_form(params)
         response = Net::HTTP.get_response(uri)
+        return nil unless response.is_a?(Net::HTTPSuccess)
         body = JSON.parse(response.body)
         next_page_token = body['nextPageToken'] if get_next_page
         body['items'].each do |item|

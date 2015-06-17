@@ -22,7 +22,7 @@ module Youtube
           video_id = 'video1'
           video_title = 'Video 1'
           items = [mock_response_from_youtube(video_id, video_title)]
-          response = double(Net::HTTPOK, body: { 'items' => items }.to_json)
+          response = double(Net::HTTPSuccess, is_a?: true, body: { 'items' => items }.to_json)
           allow(Net::HTTP).to receive(:get_response).and_return(response)
 
           results = APIClient.search('anything')
@@ -42,7 +42,7 @@ module Youtube
             video_title = "video title #{index}"
             items << mock_response_from_youtube(video_id, video_title)
           end
-          response = double(Net::HTTPOK, body: { 'items' => items }.to_json)
+          response = double(Net::HTTPSuccess, is_a?: true, body: { 'items' => items }.to_json)
           allow(Net::HTTP).to receive(:get_response).and_return(response)
 
           results = APIClient.search('anything')
@@ -54,9 +54,18 @@ module Youtube
           max_results_per_request = 50
 
           expect(Net::HTTP).to receive(:get_response).twice.
-            and_return(double(Net::HTTPOK, body: { 'items' => anything }.to_json))
+            and_return(double(Net::HTTPSuccess, is_a?: true, body: { 'items' => anything }.to_json))
 
           results = APIClient.search('anything', max_results_per_request+1)
+        end
+      end
+
+      context 'service call is unsuccesful' do
+        it 'returns nil' do
+          response = double(Net::HTTPBadRequest, is_a?: false)
+          allow(Net::HTTP).to receive(:get_response).and_return(response)
+
+          expect(APIClient.search('anything')).to be_nil
         end
       end
     end
