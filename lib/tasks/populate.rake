@@ -1,7 +1,7 @@
 namespace :populate do
-  "Populate video content"
+  desc "Populate video content"
   task :videos => :environment do
     require 'video_fetcher'
-    VideoFetcher.run(50)
+    VideoFetcher.run(200)
   end
 end

@@ -11,18 +11,26 @@ module Youtube
       end
 
       context 'service call is successful' do
-        def mock_response_from_youtube(video_id, title)
+        def mock_response_from_youtube(videos)
+          items = []
+          videos.each do |v|
+            items << {
+              'id' => {'videoId' => v[:video_id] },
+              'snippet' => { 'title' => v[:title] }
+            }
+          end
+
           {
-            'id' => {'videoId' => video_id },
-            'snippet' => { 'title' => title }
+            'pageInfo' => { 'totalResults' => videos.count },
+            'items' => items
           }
         end
 
         it 'returns an array of Videos' do
           video_id = 'video1'
           video_title = 'Video 1'
-          items = [mock_response_from_youtube(video_id, video_title)]
-          response = double(Net::HTTPSuccess, is_a?: true, body: { 'items' => items }.to_json)
+          response_body = mock_response_from_youtube([{video_id: video_id, title: video_title}])
+          response = double(Net::HTTPSuccess, is_a?: true, body: response_body.to_json)
           allow(Net::HTTP).to receive(:get_response).and_return(response)
 
           results = APIClient.search('anything')
@@ -36,13 +44,12 @@ module Youtube
         it 'returns 4 results when num results is not specified' do
           default_max_results = 4
 
-          items = []
-          default_max_results.times do |index|
-            video_id = "video id #{index}"
-            video_title = "video title #{index}"
-            items << mock_response_from_youtube(video_id, video_title)
+          videos = (0...default_max_results).inject([]) do |h, index|
+            h << { video_id: "video id #{index}", title: "video title #{index}" }
+            h
           end
-          response = double(Net::HTTPSuccess, is_a?: true, body: { 'items' => items }.to_json)
+          response_body = mock_response_from_youtube(videos)
+          response = double(Net::HTTPSuccess, is_a?: true, body: response_body.to_json)
           allow(Net::HTTP).to receive(:get_response).and_return(response)
 
           results = APIClient.search('anything')
@@ -50,19 +57,49 @@ module Youtube
           expect(results.count).to eq(default_max_results)
         end
 
-        it 'makes multiple requests when more than 50 results are requested' do
+        it 'makes multiple requests when more than 50 results are requested and found' do
           max_results_per_request = 50
+          num_requested = max_results_per_request + 1
+          video_id = 'video1'
+          video_title = 'Video 1'
+          videos = (0...num_requested).inject([]) do |h, index|
+            h << { video_id: "video id #{index}", title: "video title #{index}" }
+            h
+          end
+          response_body = mock_response_from_youtube(videos)
 
           expect(Net::HTTP).to receive(:get_response).twice.
-            and_return(double(Net::HTTPSuccess, is_a?: true, body: { 'items' => anything }.to_json))
+            and_return(double(
+              Net::HTTPSuccess,
+              is_a?: true,
+              body: response_body.to_json
+            ))
 
-          results = APIClient.search('anything', max_results_per_request+1)
+          results = APIClient.search('anything', num_requested)
+        end
+
+        it 'returns only available results if num_results requested is greater than actual result set' do
+          max_results_per_request = 50
+          num_results = max_results_per_request + 1
+          total_results_set = max_results_per_request
+
+          expect(Net::HTTP).to receive(:get_response).once.
+            and_return(double(
+              Net::HTTPSuccess,
+              is_a?: true,
+              body: {
+                'pageInfo' => { 'totalResults' => 50 },
+                'items' => anything
+              }.to_json
+            ))
+
+          results = APIClient.search('anything', num_results)
         end
       end
 
       context 'service call is unsuccesful' do
         it 'returns nil' do
-          response = double(Net::HTTPBadRequest, is_a?: false)
+          response = double("A Net::HTTP failed request class", is_a?: false)
           allow(Net::HTTP).to receive(:get_response).and_return(response)
 
           expect(APIClient.search('anything')).to be_nil

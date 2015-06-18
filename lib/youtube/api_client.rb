@@ -4,26 +4,27 @@ module Youtube
     API_KEY = ENV['YOUTUBE_API_KEY']
     SEARCH_URL = "#{BASE_URL}/search"
 
-    def self.search(query, num_results=4)
+    def self.search(query, num_results_requested=4)
       raise ArgumentError.new('query must be a String') unless query.is_a?(String)
       max_results_allowed_per_request = 50 # this is limit placed by Google's API
+      get_next_page = false
+      next_page_token ||= nil
       results = []
-      until num_results == 0
-        next_page_token ||= nil
-        max_results = if num_results > max_results_allowed_per_request
-                        get_next_page = true
-                        max_results_allowed_per_request
-                      else
-                        get_next_page = false
-                        num_results
-                      end
+      until num_results_requested == 0
+        max_results_param =
+          if num_results_requested > max_results_allowed_per_request
+            get_next_page = true
+            max_results_allowed_per_request
+          else
+            num_results_requested
+          end
 
         params = {
           part: 'snippet',
           order: 'viewCount',
           type: 'video',
           q: query,
-          maxResults: max_results,
+          maxResults: max_results_param,
           key: API_KEY
         }
 
@@ -40,7 +41,13 @@ module Youtube
           title = item['snippet']['title']
           results << Video.new(title: title, video_id: video_id)
         end
-        num_results -= max_results
+
+        num_results_requested =
+          if body['pageInfo']['totalResults'] <= max_results_param
+            0
+          else
+            num_results_requested - max_results_param
+          end
       end
       results
     end
