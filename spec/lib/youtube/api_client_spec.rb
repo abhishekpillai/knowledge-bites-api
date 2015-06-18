@@ -11,7 +11,7 @@ module Youtube
       end
 
       context 'service call is successful' do
-        def mock_response_from_youtube(videos)
+        def mock_response_from_youtube(videos, total_results=nil)
           items = []
           videos.each do |v|
             items << {
@@ -21,7 +21,7 @@ module Youtube
           end
 
           {
-            'pageInfo' => { 'totalResults' => videos.count },
+            'pageInfo' => { 'totalResults' => total_results || videos.count },
             'items' => items
           }
         end
@@ -74,15 +74,20 @@ module Youtube
             h << { video_id: "video id #{index}", title: "video title #{index}" }
             h
           end
-          response_body = mock_response_from_youtube(videos)
+          response_body_1 = mock_response_from_youtube(videos.first(50), num_requested)
+          response_body_2 = mock_response_from_youtube([videos.last])
+
+          response_1 = double(Net::HTTPSuccess, {
+            code: 200,
+            is_a?: true,
+            body: response_body_1.to_json })
+          response_2 = double(Net::HTTPSuccess, {
+            code: 200,
+            is_a?: true,
+            body: response_body_2.to_json })
 
           expect(Net::HTTP).to receive(:get_response).twice.
-            and_return(double(
-              Net::HTTPSuccess,
-              code: 200,
-              is_a?: true,
-              body: response_body.to_json
-            ))
+            and_return(response_1, response_2)
 
           results = APIClient.search('anything', num_requested)
         end

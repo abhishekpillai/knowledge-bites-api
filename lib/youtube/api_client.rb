@@ -40,11 +40,12 @@ module Youtube
         end
 
         body = JSON.parse(response.body)
-        log(:info, code: response.code, status: "success", found: body['items'].count)
+        videos = body['items']
+        log(:info, code: response.code, status: "success", found: videos.count)
 
         next_page_token = body['nextPageToken'] if get_next_page
 
-        body['items'].each do |item|
+        videos.each do |item|
           video_id = item['id']['videoId']
           title = item['snippet']['title']
           results << Video.new(title: title, video_id: video_id)
@@ -54,7 +55,7 @@ module Youtube
           if body['pageInfo']['totalResults'] <= max_results_param
             0
           else
-            num_results_requested - max_results_param
+            num_results_requested - videos.count
           end
       end
       results
