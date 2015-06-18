@@ -30,7 +30,11 @@ module Youtube
           video_id = 'video1'
           video_title = 'Video 1'
           response_body = mock_response_from_youtube([{video_id: video_id, title: video_title}])
-          response = double(Net::HTTPSuccess, is_a?: true, body: response_body.to_json)
+          response = double(
+            Net::HTTPSuccess,
+            code: 200,
+            is_a?: true,
+            body: response_body.to_json)
           allow(Net::HTTP).to receive(:get_response).and_return(response)
 
           results = APIClient.search('anything')
@@ -49,7 +53,11 @@ module Youtube
             h
           end
           response_body = mock_response_from_youtube(videos)
-          response = double(Net::HTTPSuccess, is_a?: true, body: response_body.to_json)
+          response = double(
+            Net::HTTPSuccess,
+            code: 200,
+            is_a?: true,
+            body: response_body.to_json)
           allow(Net::HTTP).to receive(:get_response).and_return(response)
 
           results = APIClient.search('anything')
@@ -71,6 +79,7 @@ module Youtube
           expect(Net::HTTP).to receive(:get_response).twice.
             and_return(double(
               Net::HTTPSuccess,
+              code: 200,
               is_a?: true,
               body: response_body.to_json
             ))
@@ -86,6 +95,7 @@ module Youtube
           expect(Net::HTTP).to receive(:get_response).once.
             and_return(double(
               Net::HTTPSuccess,
+              code: 200,
               is_a?: true,
               body: {
                 'pageInfo' => { 'totalResults' => 50 },
@@ -99,7 +109,7 @@ module Youtube
 
       context 'service call is unsuccesful' do
         it 'returns nil' do
-          response = double("A Net::HTTP failed request class", is_a?: false)
+          response = double("A Net::HTTP failed request class", code: 500, is_a?: false)
           allow(Net::HTTP).to receive(:get_response).and_return(response)
 
           expect(APIClient.search('anything')).to be_nil

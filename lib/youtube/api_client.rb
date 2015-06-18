@@ -33,9 +33,17 @@ module Youtube
         uri = URI(SEARCH_URL)
         uri.query = URI.encode_www_form(params)
         response = Net::HTTP.get_response(uri)
-        return nil unless response.is_a?(Net::HTTPSuccess)
+
+        unless response.is_a?(Net::HTTPSuccess)
+          log(:error, code: response.code, status: "failed")
+          return nil
+        end
+
         body = JSON.parse(response.body)
+        log(:info, code: response.code, status: "success", found: body['items'].count)
+
         next_page_token = body['nextPageToken'] if get_next_page
+
         body['items'].each do |item|
           video_id = item['id']['videoId']
           title = item['snippet']['title']
@@ -51,5 +59,13 @@ module Youtube
       end
       results
     end
+
+
+    private
+
+    def self.log(level, data)
+      Rails.logger.send(level, data)
+    end
+    private_class_method :log
   end
 end
