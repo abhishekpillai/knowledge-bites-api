@@ -57,5 +57,25 @@ describe VideoFetcher do
         expect(Video.count).to eq(expected_video_count)
       end
     end
+
+    context 'when service calls fail' do
+      before do
+        @client = double(Google::APIClient)
+        allow(Google::APIClient).to receive(:new).and_return(@client)
+
+        list_method = double('Google::APIClient::Method')
+        search_resource = double('Google::APIClient::Resource', list: list_method)
+        @youtube_api = double(Google::APIClient::API, search: search_resource)
+        allow(@client).to receive(:discovered_api).with('youtube', 'v3').
+          and_return(@youtube_api)
+      end
+
+      it 'does not create any videos' do
+        allow(@client).to receive(:execute!).
+          and_raise(Google::APIClient::TransmissionError)
+
+        expect { VideoFetcher.run(10) }.to_not change { Video.count }
+      end
+    end
   end
 end

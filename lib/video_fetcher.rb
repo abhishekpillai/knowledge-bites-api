@@ -28,7 +28,6 @@ class VideoFetcher
 
     # for errors, according to google api docs
     rescue Google::APIClient::TransmissionError => e
-      puts e.result.body
     end
   end
 
