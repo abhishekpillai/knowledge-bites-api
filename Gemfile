@@ -8,6 +8,8 @@ gem 'pg'
 
 gem 'foundation-rails'
 
+gem 'google-api-client', '0.8.6'
+
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.0'
 
