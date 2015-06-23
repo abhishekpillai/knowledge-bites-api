@@ -3,16 +3,23 @@ require 'video_fetcher'
 
 describe VideoFetcher do
   describe '#run' do
+    def stub_google_api_client
+      client = double(Google::APIClient)
+      allow(Google::APIClient).to receive(:new).and_return(client)
+
+      list_method = double('Google::APIClient::Method')
+      search_resource = double('Google::APIClient::Resource', list: list_method)
+      youtube_api = double(Google::APIClient::API, search: search_resource)
+
+      allow(client).to receive(:discovered_api).with('youtube', 'v3').
+        and_return(youtube_api)
+
+      client
+    end
+
     context 'when service calls are successful' do
       before do
-        @client = double(Google::APIClient)
-        allow(Google::APIClient).to receive(:new).and_return(@client)
-
-        list_method = double('Google::APIClient::Method')
-        search_resource = double('Google::APIClient::Resource', list: list_method)
-        @youtube_api = double(Google::APIClient::API, search: search_resource)
-        allow(@client).to receive(:discovered_api).with('youtube', 'v3').
-          and_return(@youtube_api)
+        @client = stub_google_api_client
       end
 
       def mock_video_in_response(title, video_id)
@@ -60,17 +67,10 @@ describe VideoFetcher do
 
     context 'when service calls fail' do
       before do
-        @client = double(Google::APIClient)
-        allow(Google::APIClient).to receive(:new).and_return(@client)
-
-        list_method = double('Google::APIClient::Method')
-        search_resource = double('Google::APIClient::Resource', list: list_method)
-        @youtube_api = double(Google::APIClient::API, search: search_resource)
-        allow(@client).to receive(:discovered_api).with('youtube', 'v3').
-          and_return(@youtube_api)
+        @client = stub_google_api_client
       end
 
-      it 'does not create any videos' do
+      it 'does not create videos' do
         allow(@client).to receive(:execute!).
           and_raise(Google::APIClient::TransmissionError)
 
